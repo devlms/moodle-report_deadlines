@@ -43,7 +43,7 @@ class deadlines {
             'course = :course AND duedate > :now AND duedate <= :until',
             ['course' => $courseid, 'now' => $now, 'until' => $now + $days * DAYSECS],
             'duedate ASC, id ASC',
-            'id, name, duedate'
+            'id, name, duedate, teamsubmission, teamsubmissiongroupingid'
         );
         $rows = [];
         foreach ($assigns as $assign) {
@@ -56,10 +56,24 @@ class deadlines {
             $students = $DB->count_records_sql("SELECT COUNT(1) FROM ($esql) je", $params);
             $params['assignment'] = $assign->id;
             $params['status'] = 'submitted';
-            $submitted = $DB->count_records_sql("SELECT COUNT(DISTINCT s.userid)
-                  FROM {assign_submission} s
-                  JOIN ($esql) je ON je.id = s.userid
-                 WHERE s.assignment = :assignment AND s.latest = 1 AND s.status = :status", $params);
+            if ($assign->teamsubmission) {
+                // Team assignments store one submission per group (userid 0); every member of that group has submitted.
+                $grouping = '';
+                if ($assign->teamsubmissiongroupingid) {
+                    $grouping = 'AND gm.groupid IN (SELECT gg.groupid FROM {groupings_groups} gg WHERE gg.groupingid = :grouping)';
+                    $params['grouping'] = $assign->teamsubmissiongroupingid;
+                }
+                $submitted = $DB->count_records_sql("SELECT COUNT(DISTINCT gm.userid)
+                      FROM {groups_members} gm
+                      JOIN ($esql) je ON je.id = gm.userid
+                      JOIN {assign_submission} s ON s.groupid = gm.groupid AND s.userid = 0
+                     WHERE s.assignment = :assignment AND s.latest = 1 AND s.status = :status $grouping", $params);
+            } else {
+                $submitted = $DB->count_records_sql("SELECT COUNT(DISTINCT s.userid)
+                      FROM {assign_submission} s
+                      JOIN ($esql) je ON je.id = s.userid
+                     WHERE s.assignment = :assignment AND s.latest = 1 AND s.status = :status", $params);
+            }
             $rows[] = (object)[
                 'cmid' => (int)$cm->id,
                 'name' => $assign->name,

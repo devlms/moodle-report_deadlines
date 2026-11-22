@@ -5,6 +5,7 @@ A course report for teachers: every assignment due in the next 7, 14, 30 or 60 d
 - Students are active enrolled users who can submit to that assignment. Drafts count as not submitted.
 - Hidden assignments and ones without a due date are left out.
 - Find it in the course: More > Reports > Upcoming deadlines. Capability report/deadlines:view (teachers and managers).
-- Version 0.1 counts every group together and covers assignments only.
+- Group (team) assignments count a student as submitted when their group has submitted.
+- Version 0.1 counts every group together, covers assignments only, and does not apply per-student extensions or overrides.
 
 Moodle 4.5 to 5.3. Built by DevLMS: https://devlms.com

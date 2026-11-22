@@ -67,4 +67,26 @@ final class deadlines_test extends \advanced_testcase {
         $names = array_map(fn($r) => $r->name, deadlines::for_course($course->id, 14));
         $this->assertSame(['A', 'B'], $names);
     }
+
+    public function test_group_submissions_count_for_every_member(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        $a = $gen->create_and_enrol($course, 'student');
+        $b = $gen->create_and_enrol($course, 'student');
+        $c = $gen->create_and_enrol($course, 'student');
+        $group = $gen->create_group(['courseid' => $course->id]);
+        $gen->create_group_member(['groupid' => $group->id, 'userid' => $a->id]);
+        $gen->create_group_member(['groupid' => $group->id, 'userid' => $b->id]);
+        $assign = $gen->create_module('assign', ['course' => $course->id, 'name' => 'Team report',
+            'duedate' => time() + 2 * DAYSECS, 'teamsubmission' => 1]);
+        $DB->insert_record('assign_submission', (object)['assignment' => $assign->id, 'userid' => 0, 'groupid' => $group->id,
+            'status' => 'submitted', 'latest' => 1, 'attemptnumber' => 0, 'timecreated' => time(), 'timemodified' => time()]);
+
+        $row = deadlines::for_course($course->id, 14)[0];
+        $this->assertSame(3, $row->students);
+        $this->assertSame(2, $row->submitted, 'Both group members count; the student without a group does not');
+        $this->assertSame(1, $row->missing);
+    }
 }
