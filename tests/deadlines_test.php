@@ -34,7 +34,7 @@ final class deadlines_test extends \advanced_testcase {
         $course = $gen->create_course();
         $s1 = $gen->create_and_enrol($course, 'student');
         $s2 = $gen->create_and_enrol($course, 'student');
-        $s3 = $gen->create_and_enrol($course, 'student');
+        $gen->create_and_enrol($course, 'student');
         $gen->create_and_enrol($course, 'editingteacher');
         $soon = $gen->create_module('assign', ['course' => $course->id, 'name' => 'Essay', 'duedate' => time() + 3 * DAYSECS]);
         $gen->create_module('assign', ['course' => $course->id, 'name' => 'Later', 'duedate' => time() + 40 * DAYSECS]);

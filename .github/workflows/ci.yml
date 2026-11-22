@@ -117,7 +117,7 @@ jobs:
       - name: PHPUnit tests with coverage
         if: ${{ !cancelled() && matrix.coverage }}
         run: |
-          plugindir=$(find moodle -maxdepth 4 -type d -path '*/local/recertify' | head -1)
+          plugindir=$(find moodle -maxdepth 4 -type d -path '*/report/deadlines' | head -1)
           # Moodle 5.1+ keeps web files, this script included, under public/.
           php "$(find moodle -maxdepth 6 -path '*/admin/tool/phpunit/cli/util.php' | head -1)" --buildcomponentconfigs
           cd moodle
@@ -178,7 +178,7 @@ jobs:
           RESULTS: ${{ toJSON(needs) }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           COMMIT: ${{ github.sha }}
-          PLUGIN: local_recertify
+          PLUGIN: report_deadlines
           REPO: ${{ github.repository }}
       - uses: actions/upload-pages-artifact@v4
         with:
